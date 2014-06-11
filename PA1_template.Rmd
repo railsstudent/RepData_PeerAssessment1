@@ -23,9 +23,9 @@ median_steps = median(aggregate_data$total_steps)
 
 ## What is mean total number of steps taken per day?
 
-``` {r histogram , fig.width=10}
+``` {r total_steps, fig.width=10}
 library(ggplot2)
-p1 <- ggplot(data=aggregate_data, aes(x=aggregate_data$month_date,y=aggregate_data$total_steps)) + geom_bar(stat="identity", fill="red") + ggtitle("Total steps by date") + xlab('Year 2012') + ylab('Total Steps')
+p1 <- ggplot(data=aggregate_data, aes(x=aggregate_data$month_date,y=aggregate_data$total_steps)) + geom_bar(stat="identity", fill="red") + ggtitle("Total steps by date") + xlab('Year 2012') + ylab('Total Steps') + theme(axis.text.x = element_blank())
 print (p1)
 ```
 
