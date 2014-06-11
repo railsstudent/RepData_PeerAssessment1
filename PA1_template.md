@@ -3,7 +3,8 @@
 
 ## Loading and preprocessing the data
 
-``` {r setoptions, echo=TRUE}
+
+```r
 options(scipen=999)
 zipPath <- "activity.zip";
 filename <- "activity.csv";
@@ -23,14 +24,17 @@ median_steps = median(aggregate_data$total_steps)
 
 ## What is mean total number of steps taken per day?
 
-``` {r histogram , fig.width=10}
+
+```r
 library(ggplot2)
 p1 <- ggplot(data=aggregate_data, aes(x=aggregate_data$month_date,y=aggregate_data$total_steps)) + geom_bar(stat="identity", fill="red") + ggtitle("Total steps by date") + xlab('Year 2012') + ylab('Total Steps')
 print (p1)
 ```
 
-1. The mean total number of steps is `r mean_steps`.
-2. The median total number of steps is `r median_steps`.
+![plot of chunk histogram ](figure/histogram .png) 
+
+1. The mean total number of steps is 10766.1887.
+2. The median total number of steps is 10765.
 
 ## What is the average daily activity pattern?
 
