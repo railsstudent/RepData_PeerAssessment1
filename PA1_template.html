@@ -210,6 +210,8 @@ aggregate_interval &lt;- aggregate(x=clean_data$steps, by=list(clean_data$interv
 colnames(aggregate_interval) &lt;- c(&#39;interval&#39;, &#39;total_steps&#39;)
 aggregate_interval$avg_steps &lt;- aggregate_interval$total_steps / num_dates
 max_interval &lt;- aggregate_interval[aggregate_interval$avg_steps == max(aggregate_interval$avg_steps), c(&#39;interval&#39;)]
+
+num_missing_data_row &lt;- nrow(raw_data[is.na(raw_data$steps), ])
 </code></pre>
 
 <h2>What is mean total number of steps taken per day?</h2>
@@ -242,6 +244,10 @@ print (p2)
 </ol>
 
 <h2>Inputing missing values</h2>
+
+<ol>
+<li>Number of rows with NA data equals 2304.</li>
+</ol>
 
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 
