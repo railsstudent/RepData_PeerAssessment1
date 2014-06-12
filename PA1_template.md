@@ -12,7 +12,7 @@ filename <- "activity.csv";
 csvfile <- unz (zipPath, filename);
 raw_data <- read.csv(csvfile)
 clean_data <- raw_data[!is.na(raw_data$steps), ]
-clean_data <- clean_data[clean_data$steps != 0, c('date', 'steps')]
+clean_data <- clean_data[clean_data$steps != 0, ]
 
 # group data by date and sum the steps
 aggregate_data <- aggregate(x=clean_data$steps, by=list(clean_data$date), FUN = sum)
@@ -25,6 +25,13 @@ aggregate_data <- aggregate_data[order(aggregate_data$total_steps), ]
 
 mean_steps = mean(aggregate_data$total_steps)
 median_steps = median(aggregate_data$total_steps)
+
+# aggregate steps by intervals
+num_dates = nrow(aggregate_data)
+aggregate_interval <- aggregate(x=clean_data$steps, by=list(clean_data$interval), FUN = sum)
+colnames(aggregate_interval) <- c('interval', 'total_steps')
+aggregate_interval$avg_steps <- aggregate_interval$total_steps / num_dates
+max_interval <- aggregate_interval[aggregate_interval$avg_steps == max(aggregate_interval$avg_steps), c('interval')]
 ```
 
 ## What is mean total number of steps taken per day?
@@ -45,8 +52,18 @@ print (p1)
 ## What is the average daily activity pattern?
 
 
+```r
+p2 <- ggplot(aggregate_interval, aes(y=aggregate_interval$total_steps, x=aggregate_interval$interval))
+p2 <- p2 + geom_line(color="red") + geom_point()
+p2 <- p2 + xlab('Time interval') + ylab('Total steps') + ggtitle('Average daily activity pattern')
+print (p2)
+```
 
-## Imputing missing values
+![plot of chunk timeseriesplot](figure/timeseriesplot.png) 
+
+1. The 5-minute interval that contains the maximum average number of steps taken is 835.
+
+## Inputing missing values
 
 
 
