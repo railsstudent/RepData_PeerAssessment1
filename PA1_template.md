@@ -12,28 +12,49 @@ filename <- "activity.csv";
 csvfile <- unz (zipPath, filename);
 raw_data <- read.csv(csvfile)
 clean_data <- raw_data[!is.na(raw_data$steps), ]
-clean_data <- clean_data[clean_data$steps != 0, ]
 
 # group data by date and sum the steps
 aggregate_data <- aggregate(x=clean_data$steps, by=list(clean_data$date), FUN = sum)
 colnames(aggregate_data) <- c('date', 'total_steps')
-
-# group by number of steps and count number of occurrences
-aggregate_steps <- count(aggregate_data, "total_steps")
-colnames(aggregate_steps) <- c('steps', 'frequency')
 aggregate_data <- aggregate_data[order(aggregate_data$total_steps), ]
 
 mean_steps = mean(aggregate_data$total_steps)
 median_steps = median(aggregate_data$total_steps)
 
 # aggregate steps by intervals
-num_dates = nrow(aggregate_data)
 aggregate_interval <- aggregate(x=clean_data$steps, by=list(clean_data$interval), FUN = sum)
 colnames(aggregate_interval) <- c('interval', 'total_steps')
-aggregate_interval$avg_steps <- aggregate_interval$total_steps / num_dates
+
+aggregate_num_date <- count(clean_data, "interval")
+colnames(aggregate_num_date) <- c("interval","num_dates")
+
+aggregate_interval <- cbind(aggregate_interval, aggregate_num_date$num_dates)
+colnames(aggregate_interval) <- c("interval","total_steps", "num_dates")
+aggregate_interval$avg_steps <- aggregate_interval$total_steps / aggregate_interval$num_dates
+
 max_interval <- aggregate_interval[aggregate_interval$avg_steps == max(aggregate_interval$avg_steps), c('interval')]
 
 num_missing_data_row <- nrow(raw_data[is.na(raw_data$steps), ])
+
+# create a new dataset with missing data filled in.
+new_ds <- raw_data
+a1 <- new_ds[is.na(new_ds$steps), ]
+a2 <- new_ds[!is.na(new_ds$steps), ]
+mat <- as.matrix(a1)
+
+for (i in 1:nrow(mat)) {
+ mat[i, "steps"] <- aggregate_interval[aggregate_interval$interval == as.integer(mat[i, "interval"]), "avg_steps" ]
+}
+new_ds <- rbind(a2,as.data.frame(mat))
+new_ds <- new_ds[order(new_ds$date, as.integer(new_ds$interval)),]
+new_ds$steps <- as.numeric(new_ds$steps)
+
+agg_data_input <- aggregate(x=new_ds$steps, by=list(new_ds$date), FUN = sum)
+colnames(agg_data_input) <- c('date', 'total_steps')
+agg_data_input <- agg_data_input[order(agg_data_input$total_steps), ]
+
+mean_steps_input = mean(agg_data_input$total_steps)
+median_steps_input = median(agg_data_input$total_steps)
 ```
 
 ## What is mean total number of steps taken per day?
@@ -68,5 +89,18 @@ print (p2)
 ## Inputing missing values
 
 1. Number of rows with NA data equals 2304.
+2. My strategy fills the missing data with the mean of the 5-minute interval across all days.
+3. The mean total number of steps taken per day is 10766.1887.
+4. The median total number of steps taken per day is 10766.1887.
+5. The mean and median are the same in this part. The mean in this part is the same as first part while median in this part is larger than the median in the first part. One significance difference is the bar of interval 10000 - 11000. The value increases from 5 to approximately 17. Since the number of non-zero values has increased; therefore, the median shifts right.
+
+
+```r
+p3 <- ggplot(agg_data_input, aes(x=agg_data_input$total_steps))
+p3 <- p3 + geom_histogram(fill="red", color="black", binwidth=1000) + ggtitle("Frequency of total steps taken per day with inputs") + xlab('Total number of steps per day') + ylab('Frequency')
+print (p3)
+```
+
+![plot of chunk total_steps_with_inputs](figure/total_steps_with_inputs.png) 
 
 ## Are there differences in activity patterns between weekdays and weekends?
