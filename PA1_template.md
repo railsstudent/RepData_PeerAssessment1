@@ -46,15 +46,25 @@ for (i in 1:nrow(mat)) {
  mat[i, "steps"] <- aggregate_interval[aggregate_interval$interval == as.integer(mat[i, "interval"]), "avg_steps" ]
 }
 new_ds <- rbind(a2,as.data.frame(mat))
-new_ds <- new_ds[order(new_ds$date, as.integer(new_ds$interval)),]
+new_ds$interval <- as.integer(new_ds$interval)
 new_ds$steps <- as.numeric(new_ds$steps)
+new_ds$wday <- as.POSIXlt(new_ds$date)$wday
+new_ds$factor <- ifelse(new_ds$wday %in% c(1,2,3,4,5), 'weekday', 'weekend')
+#new_ds <- new_ds[order(new_ds$date, as.integer(new_ds$interval)),]
 
 agg_data_input <- aggregate(x=new_ds$steps, by=list(new_ds$date), FUN = sum)
 colnames(agg_data_input) <- c('date', 'total_steps')
-agg_data_input <- agg_data_input[order(agg_data_input$total_steps), ]
+#agg_data_input <- agg_data_input[order(agg_data_input$total_steps), ]
 
 mean_steps_input = mean(agg_data_input$total_steps)
 median_steps_input = median(agg_data_input$total_steps)
+
+# sum steps by weekday/weekend and interval
+agg_data_wday <- aggregate(x=new_ds$steps, by=list(new_ds$factor, new_ds$interval), 
+                           FUN = sum)
+colnames(agg_data_wday) <- c('wday', 'interval', 'total_steps')
+agg_data_wday$total_steps1000 <- agg_data_wday$total_steps / 1000.0
+colnames(agg_data_wday)[4] <- 'total_steps1000'
 ```
 
 ## What is mean total number of steps taken per day?
@@ -104,3 +114,15 @@ print (p3)
 ![plot of chunk total_steps_with_inputs](figure/total_steps_with_inputs.png) 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+p4 <- ggplot(agg_data_wday, aes(y=total_steps1000, x=interval))
+p4 <- p4 + facet_grid(wday ~ .)
+p4 <- p4 + geom_line(color="red") + geom_point()
+p4 <- p4 + xlab('Interval') + ylab('Number of steps (divide by 1000)') + ggtitle('Weekday vs weekend activity pattern')
+print (p4)
+```
+
+![plot of chunk weekend_plot](figure/weekend_plot.png) 
+
+1. Assume the plots are correct, people walk much less in weekend than in weekday.
